@@ -83,11 +83,19 @@ jobs:
           path: artifacts
 
       - name: Package executables
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p release-binaries
+          shopt -s nullglob
           for dist in artifacts/build-*; do
+            dist_files=("$dist"/dist/*)
+            if [ ${#dist_files[@]} -eq 0 ]; then
+              echo "skipping ${dist}: no files in dist/"
+              continue
+            fi
             os=${dist#artifacts/build-}
-            zip -j "release-binaries/thesis-counter-${os}.zip" "$dist"/dist/*
+            zip -j "release-binaries/thesis-counter-${os}.zip" "${dist_files[@]}"
           done
 
       - name: Create release
