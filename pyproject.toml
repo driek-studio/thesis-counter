@@ -10,3 +10,6 @@ dependencies = [
 [project.optional-dependencies]
 gui = ["tkinterdnd2>=0.3.0"]
 dev = ["pytest>=7.0", "pytest-cov"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
