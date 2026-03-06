@@ -8,10 +8,11 @@ on:
       - "v*"
 
 jobs:
-  determine-build-needed:
+  determine-context:
     runs-on: ubuntu-latest
     outputs:
       rebuild: ${{ steps.changes.outputs.rebuild }}
+      is_tag: ${{ steps.tag.outputs.is_tag }}
 
     steps:
       - uses: actions/checkout@v4
@@ -29,9 +30,14 @@ jobs:
               - 'build/**'
               - 'tests/**'
 
+      - name: Detect tag push
+        id: tag
+        run: |
+          echo "is_tag=${{ startsWith(github.ref, 'refs/tags/') }}" >> $GITHUB_OUTPUT
+
   build:
-    needs: determine-build-needed
-    if: ${{ startsWith(github.ref, 'refs/tags/') || needs.determine-build-needed.outputs.rebuild == 'true' }}
+    needs: determine-context
+    if: ${{ needs.determine-context.outputs.is_tag == 'true' || needs.determine-context.outputs.rebuild == 'true' }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -62,7 +68,7 @@ jobs:
           path: dist/*
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
+    if: ${{ needs.determine-context.outputs.is_tag == 'true' }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -76,9 +82,18 @@ jobs:
         with:
           path: artifacts
 
+      - name: Package executables
+        run: |
+          mkdir -p release-binaries
+          for dist in artifacts/build-*; do
+            os=${dist#artifacts/build-}
+            zip -j "release-binaries/thesis-counter-${os}.zip" "$dist"/dist/*
+          done
+
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/build-*/
+          files: release-binaries/*.zip
+          body_path: readme.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
