@@ -1,10 +1,4 @@
 [project]
 name = "thesis-counter"
 version = "0.1.0"
-dependencies = [
-	"pymupdf",
-	"rich",
-	"pymyupdf",
-	"pyside6",
-	
-]
+dependencies = []
