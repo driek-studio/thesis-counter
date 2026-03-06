@@ -8,7 +8,30 @@ on:
       - "v*"
 
 jobs:
+  determine-build-needed:
+    runs-on: ubuntu-latest
+    outputs:
+      rebuild: ${{ steps.changes.outputs.rebuild }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect relevant changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            rebuild:
+              - 'src/**'
+              - 'pyproject.toml'
+              - 'build/**'
+              - 'tests/**'
+
   build:
+    needs: determine-build-needed
+    if: ${{ startsWith(github.ref, 'refs/tags/') || needs.determine-build-needed.outputs.rebuild == 'true' }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -39,7 +62,7 @@ jobs:
           path: dist/*
 
   release:
-    if: github.ref == 'refs/heads/main'
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     permissions:
