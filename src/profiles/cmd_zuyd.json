@@ -1,0 +1,32 @@
+{
+  "id": "cmd_zuyd",
+  "name": "CMD Zuyd",
+  "max_words": 15000,
+  "rules": {
+    "exclude_front_matter": true,
+    "exclude_toc": true,
+    "exclude_abstract": true,
+    "exclude_preface": true,
+    "exclude_appendices": true,
+    "exclude_references": true,
+    "exclude_headers_footers": true,
+    "exclude_captions": true,
+    "merge_hyphenation": true,
+    "numbers_as_words": false
+  },
+  "lexicon": {
+    "front_matter": ["titelblad", "title page"],
+    "toc": ["inhoudsopgave", "table of contents", "contents"],
+    "abstract": ["samenvatting", "abstract", "management summary"],
+    "preface": ["voorwoord", "preface", "dankwoord", "acknowledgements"],
+    "appendices": ["bijlage", "bijlagen", "appendix", "appendices"],
+    "references": [
+      "referenties",
+      "references",
+      "bronnenlijst",
+      "bibliography",
+      "literatuurlijst",
+      "literatuur"
+    ]
+  }
+}

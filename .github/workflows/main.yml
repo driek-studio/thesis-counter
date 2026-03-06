@@ -54,18 +54,48 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install .
+          pip install ".[dev]"
           pip install pyinstaller
 
-      - name: Build executable
+      - name: Run tests
         run: |
-          pyinstaller --onefile src/main.py
+          PYTHONPATH=src pytest tests/ -v
+
+      - name: Build app
+        shell: bash
+        run: |
+          SEP=":"
+          if [ "${RUNNER_OS}" = "Windows" ]; then SEP=";"; fi
+          DATA_FLAG="--add-data src/profiles${SEP}profiles"
+          if [ "${RUNNER_OS}" = "macOS" ]; then
+            pyinstaller --windowed --paths src ${DATA_FLAG} --name "Thesis Counter" src/main.py
+          elif [ "${RUNNER_OS}" = "Windows" ]; then
+            pyinstaller --onefile --paths src ${DATA_FLAG} --name thesis-counter src/main.py
+          else
+            pyinstaller --onefile --paths src ${DATA_FLAG} --name thesis-counter src/main.py
+          fi
+
+      - name: Package release asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${RUNNER_OS}" = "macOS" ]; then
+            hdiutil create -volname "Thesis Counter" -srcfolder "dist/Thesis Counter.app" -ov -format UDZO "thesis-counter-macos.dmg"
+            echo "ASSET_PATH=thesis-counter-macos.dmg" >> "$GITHUB_ENV"
+          elif [ "${RUNNER_OS}" = "Windows" ]; then
+            python -c "import zipfile; z=zipfile.ZipFile('thesis-counter-windows.zip','w',zipfile.ZIP_DEFLATED); z.write('dist/thesis-counter.exe','thesis-counter.exe'); z.close()"
+            echo "ASSET_PATH=thesis-counter-windows.zip" >> "$GITHUB_ENV"
+          else
+            python -c "import tarfile; t=tarfile.open('thesis-counter-linux.tar.gz','w:gz'); t.add('dist/thesis-counter', arcname='thesis-counter'); t.close()"
+            echo "ASSET_PATH=thesis-counter-linux.tar.gz" >> "$GITHUB_ENV"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.os }}
-          path: dist/*
+          name: release-${{ matrix.os }}
+          path: ${{ env.ASSET_PATH }}
+          if-no-files-found: error
 
   release:
     if: ${{ needs.determine-context.outputs.is_tag == 'true' }}
@@ -82,26 +112,18 @@ jobs:
         with:
           path: artifacts
 
-      - name: Package executables
+      - name: Collect release files
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p release-binaries
-          shopt -s nullglob
-          for dist in artifacts/build-*; do
-            dist_files=("$dist"/dist/*)
-            if [ ${#dist_files[@]} -eq 0 ]; then
-              echo "skipping ${dist}: no files in dist/"
-              continue
-            fi
-            os=${dist#artifacts/build-}
-            zip -j "release-binaries/thesis-counter-${os}.zip" "${dist_files[@]}"
-          done
+          mkdir -p release-assets
+          find artifacts -type f -exec cp {} release-assets/ \;
+          ls -lah release-assets
 
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          files: release-binaries/*.zip
+          files: release-assets/*
           body_path: readme.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

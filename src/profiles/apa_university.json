@@ -1,0 +1,25 @@
+{
+  "id": "apa_university",
+  "name": "APA University",
+  "max_words": 0,
+  "rules": {
+    "exclude_front_matter": true,
+    "exclude_toc": true,
+    "exclude_abstract": false,
+    "exclude_preface": true,
+    "exclude_appendices": true,
+    "exclude_references": true,
+    "exclude_headers_footers": true,
+    "exclude_captions": false,
+    "merge_hyphenation": true,
+    "numbers_as_words": true
+  },
+  "lexicon": {
+    "front_matter": ["title page", "titelblad"],
+    "toc": ["table of contents", "contents", "inhoudsopgave"],
+    "abstract": ["abstract", "samenvatting"],
+    "preface": ["preface", "foreword", "acknowledgements", "voorwoord", "dankwoord"],
+    "appendices": ["appendix", "appendices", "bijlage", "bijlagen"],
+    "references": ["references", "bibliography", "works cited", "literatuurlijst", "literatuur", "referenties", "bronnenlijst"]
+  }
+}

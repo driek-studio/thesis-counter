@@ -1,0 +1,14 @@
+pyproject.toml
+src/main.py
+src/core/__init__.py
+src/core/engine.py
+src/core/export.py
+src/core/i18n.py
+src/core/models.py
+src/core/parser.py
+src/thesis_counter.egg-info/PKG-INFO
+src/thesis_counter.egg-info/SOURCES.txt
+src/thesis_counter.egg-info/dependency_links.txt
+src/thesis_counter.egg-info/requires.txt
+src/thesis_counter.egg-info/top_level.txt
+tests/test_parser.py
