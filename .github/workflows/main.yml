@@ -58,8 +58,11 @@ jobs:
           pip install pyinstaller
 
       - name: Run tests
+        shell: bash
+        env:
+          PYTHONPATH: src
         run: |
-          PYTHONPATH=src pytest tests/ -v
+          pytest tests/ -v
 
       - name: Build app
         shell: bash
